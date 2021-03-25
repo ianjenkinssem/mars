@@ -2,7 +2,7 @@ import multiprocessing  # See https://docs.python.org/3/library/multiprocessing.
 import argparse  # See https://docs.python.org/3/library/argparse.html
 import random
 from math import pi
-
+import time
 def sample_pi(n):
     """ Perform n steps of Monte Carlo simulation for estimating Pi/4.
         Returns the number of sucesses."""
@@ -34,14 +34,16 @@ def compute_pi(args):
 
 
 if __name__ == "__main__":
+    start_time = time.time()
     parser = argparse.ArgumentParser(description='Compute Pi using Monte Carlo simulation.')
     parser.add_argument('--workers', '-w',
                         default='1',
                         type = int,
                         help='Number of parallel processes')
     parser.add_argument('--steps', '-s',
-                        default='1000',
+                        default='10000000',
                         type = int,
                         help='Number of steps in the Monte Carlo simulation')
     args = parser.parse_args()
     compute_pi(args)
+    print('Time', (time.time() - start_time))
