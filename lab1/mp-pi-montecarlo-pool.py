@@ -41,7 +41,7 @@ if __name__ == "__main__":
                         type = int,
                         help='Number of parallel processes')
     parser.add_argument('--steps', '-s',
-                        default='10000000',
+                        default='100000000',
                         type = int,
                         help='Number of steps in the Monte Carlo simulation')
     args = parser.parse_args()
