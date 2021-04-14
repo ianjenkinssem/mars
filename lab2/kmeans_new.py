@@ -10,7 +10,8 @@ import numpy as np
 import matplotlib.pyplot as plt
 from sklearn.datasets import make_blobs
 import time
-import multiprocessing
+import multiprocessing as mp
+import functools
 
 def generateData(n, c):
     logging.info(f"Generating {n} samples in {c} classes")
@@ -22,30 +23,16 @@ def generateData(n, c):
 def nearestCentroid(datum, centroids):
     # norm(a-b) is Euclidean distance, matrix - vector computes difference
     # for all rows of matrix
+    #print("In nearestCentroid - datum and centroid", datum)
+    #print("Centroids ", centroids)
     dist = np.linalg.norm(centroids - datum, axis=1)
+    #print("cluster and dist", np.argmin(dist), np.min(dist))
     return np.argmin(dist), np.min(dist)
 
-# Added code for parallelization...
-def invokeParallelCode(data, centroids):
-    #N = len(data)
-    #variation = np.zeros(k)
-    #cluster_sizes = np.zeros(k, dtype=int)
-    #for i in range(N):
-    cluster, dist = nearestCentroid(data, centroids)
-        #c[i] = cluster
-        #cluster_sizes[cluster] += 1
-        #variation[cluster] += dist ** 2
-        #print("cluster cluster_size variation ==>", c[i], cluster_sizes[cluster], variation[cluster])
-
-    return cluster, dist
-
-def kmeans(workers, k, data, nr_iter = 2):
+def kmeans(workers, k, data, nr_iter = 5):
 #def kmeans(k, data, nr_iter = 100):
 
-    #Added code for parallelization
-    #p = multiprocessing.Pool(workers)
-    #N, new_X = p.map(invokeParallelCode, [(data, workers)] )
-
+    begin_time = time.time()
     N = len(data)
 
     # Choose k random data points as centroids
@@ -57,33 +44,51 @@ def kmeans(workers, k, data, nr_iter = 2):
 
     logging.info("Iteration\tVariation\tDelta Variation")
     total_variation = 0.0
-    for j in range(nr_iter):  # For each iteration
+
+    # For each iteration
+    for j in range(nr_iter):
         logging.debug("=== Iteration %d ===" % (j+1))
         print("Iteration# :", j+1)
 
         variation = np.zeros(k)
         cluster_sizes = np.zeros(k, dtype=int)
 
-        # Added code for parallelization
-        p = multiprocessing.Pool(workers)  # Split into number of processors
-        new_data = np.array_split(data, workers)  # Split data to number of processors/workers
-        print("============>",k, new_data)
-        # End
+        ########## Added code for parallelization ###########
 
-        #Update N to the size of split data
-        N=len(new_data[1])
-        print("old N is", len(data))
-        print("new N is", N)
+        # Split data to number of processors/workers
+        split_data = np.array_split(data, workers)
+        #print("num of clusters, split data ============>",k, split_data)
 
-        # Assign data points to nearest centroid
-        for i in range(N):
+        # Assign data points to nearest centroid ---> OLD CODE
+        #for i in range(N):
             #cluster, dist = nearestCentroid(data[i],centroids)
-            print("new_data[i]", i, list(new_data[i]))
-            cluster, dist = p.starmap(invokeParallelCode,[list(new_data[i]),centroids])
-            c[i] = cluster
-            cluster_sizes[cluster] += 1
-            variation[cluster] += dist**2
-            print("cluster cluster_size variation ==>", c[i], cluster_sizes[cluster], variation[cluster])
+
+        #Create a list to aggregate all cluster-dist tuple information
+        list_cluster_dist = []
+
+        start_time = time.time()
+        # Iterate through the list of split data
+        for i in range(len(split_data)):
+            assignmentFunction = functools.partial(nearestCentroid, centroids)
+            pool = mp.Pool(workers)
+            result = pool.map(assignmentFunction, split_data[i])
+            print("Result:", result)
+            # Retrieve the cluster and distance from the result and consolidate data into list
+            for tup in result:
+                list_cluster_dist.append(tup)
+
+        #print("********** length and list_cluster_dist ===>", len(list_cluster_dist), list_cluster_dist)
+        stop_time = time.time()
+        print("Execution time of nearestCentroid in seconds ", stop_time - start_time)
+
+        ########## End code for parallelization ###########
+
+        for i in range(N):
+            for cluster,dist in list_cluster_dist:  # newly added
+                c[i] = cluster
+                cluster_sizes[cluster] += 1
+                variation[cluster] += dist**2
+                #print("cluster cluster_size variation ==>", c[i], cluster_sizes[cluster], variation[cluster])
 
         delta_variation = -total_variation
         total_variation = sum(variation) 
@@ -93,11 +98,14 @@ def kmeans(workers, k, data, nr_iter = 2):
         logging.info("%3d\t\t%f\t%f" % (j, total_variation, delta_variation))
 
         # Recompute centroids
+        start_time1 = time.time()
         centroids = np.zeros((k,2)) # This fixes the dimension to 2
         for i in range(N):
             centroids[c[i]] += data[i]        
         centroids = centroids / cluster_sizes.reshape(-1,1)
-        
+        stop_time1 = time.time()
+        print("Execution time for recomputing centroids in seconds ", stop_time1 - start_time1)
+
         logging.debug(cluster_sizes)
         logging.debug(c)
         logging.debug(centroids)
