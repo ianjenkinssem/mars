@@ -58,7 +58,7 @@ def kmeans(workers, k, data, nr_iter = 100):
     total_variation = 0.0
     for j in range(nr_iter):  # For each iteration
         logging.debug("=== Iteration %d ===" % (j+1))
-        #####print("Iteration# :", j+1)
+        print("Iteration# :", j+1)
 
         variation = np.zeros(k)
         cluster_sizes = np.zeros(k, dtype=int)
@@ -66,13 +66,13 @@ def kmeans(workers, k, data, nr_iter = 100):
         # Added code for parallelization
         p = multiprocessing.Pool(workers)  # Split into number of processors
         new_data = np.array_split(data, workers)  # Split data to number of processors/workers
-        #####print("============>",k, new_data)
+        print("============>",k, new_data)
         # End
 
         #Update N to the size of split data
         N=len(new_data[1])
-        #####print("old N is", len(data))
-        #####print("new N is", N)
+        print("old N is", len(data))
+        print("new N is", N)
 
         # Assign data points to nearest centroid
         for i in range(N):
