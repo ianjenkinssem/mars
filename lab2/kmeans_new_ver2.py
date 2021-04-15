@@ -58,7 +58,7 @@ def kmeans(workers, k, data, nr_iter = 100):
     total_variation = 0.0
     for j in range(nr_iter):  # For each iteration
         logging.debug("=== Iteration %d ===" % (j+1))
-        print("Iteration# :", j+1)
+        ###print("Iteration# :", j+1)
 
         variation = np.zeros(k)
         cluster_sizes = np.zeros(k, dtype=int)
@@ -66,29 +66,29 @@ def kmeans(workers, k, data, nr_iter = 100):
         # Added code for parallelization
         p = multiprocessing.Pool(workers)  # Split into number of processors
         new_data = np.array_split(data, workers)  # Split data to number of processors/workers
-        print("============>",k, new_data)
+        #print("============>",k, new_data)
         # End
 
         #Update N to the size of split data
         N=len(new_data[1])
-        print("old N is", len(data))
-        print("new N is", N)
+        ###print("old N is", len(data))
+        ###print("new N is", N)
 
         # Assign data points to nearest centroid
         for i in range(N):
             #cluster, dist = nearestCentroid(data[i],centroids)
-            print("new_data[i]", i, list(new_data[i]))
+            ###print("new_data[i]", i, list(new_data[i]))
             cluster, dist = p.starmap(invokeParallelCode,[list(new_data[i]),centroids])
             c[i] = cluster
             cluster_sizes[cluster] += 1
             variation[cluster] += dist**2
-            print("cluster cluster_size variation ==>", c[i], cluster_sizes[cluster], variation[cluster])
+            ###print("cluster cluster_size variation ==>", c[i], cluster_sizes[cluster], variation[cluster])
 
         delta_variation = -total_variation
         total_variation = sum(variation) 
         delta_variation += total_variation
 
-        print("iteration# total_variation delta_variation", j, total_variation, delta_variation)
+        ###print("iteration# total_variation delta_variation", j, total_variation, delta_variation)
         logging.info("%3d\t\t%f\t%f" % (j, total_variation, delta_variation))
 
         # Recompute centroids
@@ -100,7 +100,7 @@ def kmeans(workers, k, data, nr_iter = 100):
         logging.debug(cluster_sizes)
         logging.debug(c)
         logging.debug(centroids)
-        print("cluster cluster_size centroids =====>", c, cluster_sizes, centroids)
+        ###print("cluster cluster_size centroids =====>", c, cluster_sizes, centroids)
 
     return total_variation, c
 
