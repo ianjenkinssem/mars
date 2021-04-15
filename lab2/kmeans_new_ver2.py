@@ -77,7 +77,7 @@ def kmeans(workers, k, data, nr_iter = 100):
         # Assign data points to nearest centroid
         for i in range(N):
             #cluster, dist = nearestCentroid(data[i],centroids)
-            #####print("new_data[i]", i, list(new_data[i]))
+            print("new_data[i]", i, list(new_data[i]))
             cluster, dist = p.starmap(invokeParallelCode,[list(new_data[i]),centroids])
             c[i] = cluster
             cluster_sizes[cluster] += 1
@@ -100,7 +100,7 @@ def kmeans(workers, k, data, nr_iter = 100):
         logging.debug(cluster_sizes)
         logging.debug(c)
         logging.debug(centroids)
-        #####print("cluster cluster_size centroids =====>", c, cluster_sizes, centroids)
+        print("cluster cluster_size centroids =====>", c, cluster_sizes, centroids)
 
     return total_variation, c
 
