@@ -10,13 +10,18 @@ import numpy as np
 import matplotlib.pyplot as plt
 from sklearn.datasets import make_blobs
 import time
-import multiprocessing as mp
+#import multiprocessing as mp
+from multiprocessing import Pool
 import functools
+import os
 
 def generateData(n, c):
+    begin_time = time.time()
     logging.info(f"Generating {n} samples in {c} classes")
     X, y = make_blobs(n_samples=n, centers = c, cluster_std=1.7, shuffle=False,
                       random_state = 2122)
+    end_time = time.time()
+    print("Execution time of generateData in seconds ", end_time - begin_time)
     return X
 
 
@@ -25,11 +30,13 @@ def nearestCentroid(datum, centroids):
     # for all rows of matrix
     #print("In nearestCentroid - datum and centroid", datum)
     #print("Centroids ", centroids)
+    #print("PID ============>:",os.getpid())
+    #print("Datum ============>", datum)
     dist = np.linalg.norm(centroids - datum, axis=1)
     #print("cluster and dist", np.argmin(dist), np.min(dist))
     return np.argmin(dist), np.min(dist)
 
-def kmeans(workers, k, data, nr_iter = 5):
+def kmeans(workers, k, data, nr_iter):
 #def kmeans(k, data, nr_iter = 100):
 
     begin_time = time.time()
@@ -48,34 +55,38 @@ def kmeans(workers, k, data, nr_iter = 5):
     # For each iteration
     for j in range(nr_iter):
         logging.debug("=== Iteration %d ===" % (j+1))
-        print("Iteration# :", j+1)
+        #print("Iteration# :", j+1)
 
         variation = np.zeros(k)
         cluster_sizes = np.zeros(k, dtype=int)
 
-        ########## Added code for parallelization ###########
-
         # Split data to number of processors/workers
-        split_data = np.array_split(data, workers)
-        #print("num of clusters, split data ============>",k, split_data)
+        #split_data = np.array_split(data, workers)
 
         # Assign data points to nearest centroid ---> OLD CODE
         #for i in range(N):
             #cluster, dist = nearestCentroid(data[i],centroids)
 
-        #Create a list to aggregate all cluster-dist tuple information
+        ########## Added code for parallelization ###########
+
+        # Create a list to aggregate all cluster-dist tuple information
         list_cluster_dist = []
 
         start_time = time.time()
         # Iterate through the list of split data
-        for i in range(len(split_data)):
-            assignmentFunction = functools.partial(nearestCentroid, centroids)
-            pool = mp.Pool(workers)
-            result = pool.map(assignmentFunction, split_data[i])
-            print("Result:", result)
-            # Retrieve the cluster and distance from the result and consolidate data into list
-            for tup in result:
-                list_cluster_dist.append(tup)
+        assignmentFunction = functools.partial(nearestCentroid, centroids)
+        #pool = mp.Pool(workers)
+
+        #[print("split data",split_data[0]) for i in range(len(split_data))]
+
+        #for i in range(len(split_data)):
+        with Pool(processes = workers) as pool:
+            #result = pool.map(assignmentFunction, split_data[i])
+            result = pool.map(assignmentFunction, [(data[i]) for i in range(len(data))])
+
+        # Retrieve the cluster and distance from the result and consolidate data into list
+        for tup in result:
+            list_cluster_dist.append(tup)
 
         #print("********** length and list_cluster_dist ===>", len(list_cluster_dist), list_cluster_dist)
         stop_time = time.time()
@@ -88,31 +99,29 @@ def kmeans(workers, k, data, nr_iter = 5):
                 c[i] = cluster
                 cluster_sizes[cluster] += 1
                 variation[cluster] += dist**2
-                #print("cluster cluster_size variation ==>", c[i], cluster_sizes[cluster], variation[cluster])
 
         delta_variation = -total_variation
         total_variation = sum(variation) 
         delta_variation += total_variation
 
-        print("iteration# total_variation delta_variation", j, total_variation, delta_variation)
+        #print("iteration# total_variation delta_variation", j, total_variation, delta_variation)
         logging.info("%3d\t\t%f\t%f" % (j, total_variation, delta_variation))
 
         # Recompute centroids
-        start_time1 = time.time()
+        #start_time1 = time.time()
         centroids = np.zeros((k,2)) # This fixes the dimension to 2
         for i in range(N):
             centroids[c[i]] += data[i]        
         centroids = centroids / cluster_sizes.reshape(-1,1)
         stop_time1 = time.time()
-        print("Execution time for recomputing centroids in seconds ", stop_time1 - start_time1)
+        #print("Execution time for recomputing centroids in seconds ", stop_time1 - start_time1)
 
         logging.debug(cluster_sizes)
         logging.debug(c)
         logging.debug(centroids)
-        print("cluster cluster_size centroids =====>", c, cluster_sizes, centroids)
+        #print("cluster cluster_size centroids =====>", c, cluster_sizes, centroids)
 
     return total_variation, c
-
 
 def computeClustering(args):
     if args.verbose:
@@ -148,19 +157,18 @@ if __name__ == "__main__":
     parser.add_argument('--workers', '-w',
                         default='2',
                         type = int,
-                        help='Number of parallel processes to use (NOT IMPLEMENTED)')
+                        help='Number of parallel processes to use')
     parser.add_argument('--k_clusters', '-k',
                         default='3',
                         type = int,
                         help='Number of clusters')
     parser.add_argument('--iterations', '-i',
-                        ##default='100',
-                        default='2',
+                        default='10',
                         type = int,
                         help='Number of iterations in k-means')
     parser.add_argument('--samples', '-s',
-                        #default='10000',
-                        default='10',
+                        default='10000',
+                        #default='10',
                         type = int,
                         help='Number of samples to generate as input')
     parser.add_argument('--classes', '-c',
