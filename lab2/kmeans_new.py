@@ -37,10 +37,16 @@ def nearestCentroid(datum, centroids):
     return np.argmin(dist), np.min(dist)
 
 def kmeans(workers, k, data, nr_iter):
-#def kmeans(k, data, nr_iter = 100):
 
     begin_time = time.time()
     N = len(data)
+
+    # Total time to calculate nearest centroid
+    nc_total_time=0
+    # Total time to calculate recompute centroids
+    rc_total_time=0
+    # Total time to calculate variations
+    vc_total_time=0
 
     # Choose k random data points as centroids
     centroids = data[np.random.choice(np.array(range(N)),size=k,replace=False)]
@@ -55,79 +61,77 @@ def kmeans(workers, k, data, nr_iter):
     # For each iteration
     for j in range(nr_iter):
         logging.debug("=== Iteration %d ===" % (j+1))
-        #print("Iteration# :", j+1)
+        #print("######## Iteration and N # :", j+1, N)
 
         variation = np.zeros(k)
         cluster_sizes = np.zeros(k, dtype=int)
 
-        # Split data to number of processors/workers
-        #split_data = np.array_split(data, workers)
-
-        # Assign data points to nearest centroid ---> OLD CODE
-        #for i in range(N):
-            #cluster, dist = nearestCentroid(data[i],centroids)
-
         ########## Added code for parallelization ###########
 
-        # Create a list to aggregate all cluster-dist tuple information
-        list_cluster_dist = []
+        # Create a dictionary to aggregate all cluster-dist tuple information
+        dict_cluster_dist = {}
 
         start_time = time.time()
         # Iterate through the list of split data
         assignmentFunction = functools.partial(nearestCentroid, centroids)
-        #pool = mp.Pool(workers)
 
-        #[print("split data",split_data[0]) for i in range(len(split_data))]
-
-        #for i in range(len(split_data)):
         with Pool(processes = workers) as pool:
-            #result = pool.map(assignmentFunction, split_data[i])
-            result = pool.map(assignmentFunction, [(data[i]) for i in range(len(data))])
+            result = pool.map(assignmentFunction, [(data[i]) for i in range(N)])
 
-        # Retrieve the cluster and distance from the result and consolidate data into list
-        for tup in result:
-            list_cluster_dist.append(tup)
+        # Retrieve the cluster and distance from the result and consolidate data into dictionary
+        for i,tup in zip(range(N),result):
+            dict_cluster_dist[i] = tup
 
-        #print("********** length and list_cluster_dist ===>", len(list_cluster_dist), list_cluster_dist)
         stop_time = time.time()
-        print("Execution time of nearestCentroid in seconds ", stop_time - start_time)
+        nc_time = stop_time - start_time
+        nc_total_time +=nc_time
 
         ########## End code for parallelization ###########
 
-        for i in range(N):
-            for cluster,dist in list_cluster_dist:  # newly added
-                c[i] = cluster
-                cluster_sizes[cluster] += 1
-                variation[cluster] += dist**2
+        #### Calculate total variation #####
+        begin_time1 = time.time()
+
+        # Loop thru the dictionary itmes that stores index and the result retrieved from parallelized code
+        for key,val in dict_cluster_dist.items():
+            c[key] = val[0]
+            cluster_sizes[val[0]] += 1
+            variation[val[0]] += val[1]**2
 
         delta_variation = -total_variation
         total_variation = sum(variation) 
         delta_variation += total_variation
-
-        #print("iteration# total_variation delta_variation", j, total_variation, delta_variation)
+        vc_time = time.time() - begin_time1
+        vc_total_time += vc_time
         logging.info("%3d\t\t%f\t%f" % (j, total_variation, delta_variation))
 
         # Recompute centroids
-        #start_time1 = time.time()
+        start_time2 = time.time()
         centroids = np.zeros((k,2)) # This fixes the dimension to 2
         for i in range(N):
             centroids[c[i]] += data[i]        
         centroids = centroids / cluster_sizes.reshape(-1,1)
-        stop_time1 = time.time()
-        #print("Execution time for recomputing centroids in seconds ", stop_time1 - start_time1)
+        rc_time=time.time() - start_time2
+
+        rc_total_time += rc_time
 
         logging.debug(cluster_sizes)
         logging.debug(c)
         logging.debug(centroids)
         #print("cluster cluster_size centroids =====>", c, cluster_sizes, centroids)
 
+    print("Total Execution time to compute nearest centroids in seconds ", nc_total_time)
+    print("Total time for calculating variation in seconds ", vc_total_time)
+    print("Total Execution time to recompute centroids in seconds ", rc_total_time)
+
     return total_variation, c
 
 def computeClustering(args):
+    begin_time = time.time()
     if args.verbose:
         logging.basicConfig(format='# %(message)s',level=logging.INFO)
     if args.debug: 
         logging.basicConfig(format='# %(message)s',level=logging.DEBUG)
+    begin_time1 = time.time()
 
     X = generateData(args.samples, args.classes)
 
@@ -163,12 +167,11 @@ if __name__ == "__main__":
                         type = int,
                         help='Number of clusters')
     parser.add_argument('--iterations', '-i',
-                        default='10',
+                        default='100',
                         type = int,
                         help='Number of iterations in k-means')
     parser.add_argument('--samples', '-s',
-                        default='10000',
-                        #default='10',
+                        default='1000',
                         type = int,
                         help='Number of samples to generate as input')
     parser.add_argument('--classes', '-c',
