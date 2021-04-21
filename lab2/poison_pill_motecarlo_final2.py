@@ -73,7 +73,7 @@ def run_jobs(num_consumers, accuracy, num_of_predictions):
 
     # Enqueue jobs
     pi_est = 0
-    #accuracy = 0.00001 # format ok 99% = 0.01 99.9 0.001
+    #accuracy = 0.01 # format ok 99% = 0.01 99.9 0.001
 
 
     # 0.001
@@ -110,7 +110,7 @@ def run_jobs(num_consumers, accuracy, num_of_predictions):
     return n/count_tasks
 
 if __name__ == '__main__':
-    accuracy = 0.05
+    accuracy = 0.00001
     num_of_predictions = 10000000
 
     timer = {}
