@@ -19,7 +19,7 @@ class Consumer(multiprocessing.Process):
         while True:
             next_task = self.task_queue.get() # multiprocessing.JoinableQueue() init from Consumer, get task obj
             if next_task is None: # poision pill
-                print(f'Exiting {proc_name}')
+                #print(f'Exiting {proc_name}')
 
                 self.task_queue.task_done()
                 break
@@ -35,7 +35,7 @@ class Task():
 
     def __call__(self):
         time.sleep(0.1)  # pretend to take some time to do the work
-        print("Hello from a worker", os.getpid())
+        #print("Hello from a worker", os.getpid())
         s = 0
         random.seed(self.b) #increments randome seed.
         #random.seed()
@@ -59,7 +59,7 @@ def run_jobs(num_consumers, accuracy, num_of_predictions):
 
     # multiprocessing.cpu_count()
 
-    print('Creating %d consumers' % num_consumers)
+    #print('Creating %d consumers' % num_consumers)
     consumers = [Consumer(tasks, results)
                  for i in range(num_consumers)] # create a list if Consumer instances.
 
@@ -74,7 +74,7 @@ def run_jobs(num_consumers, accuracy, num_of_predictions):
     #accuracy = 0.01 # format ok 99% = 0.01 99.9 0.001
     # 0.001
     n = 0
-    print(f' abs val {abs(pi - pi_est)}')
+    #print(f' abs val {abs(pi - pi_est)}')
     total_result = 0
     count_tasks = 0
     inc_rnd = 0
@@ -103,10 +103,10 @@ def run_jobs(num_consumers, accuracy, num_of_predictions):
         #tasks.join()
 
     #print(f'number of tasks {n/count_tasks}')
-    return n/count_tasks
+    return n
 
 if __name__ == '__main__':
-    accuracy = 0.000001
+    accuracy = 0.0001
     num_of_predictions = 100000
 
     timer = {}
@@ -119,7 +119,7 @@ if __name__ == '__main__':
 
     print(f'time {timer}')
     # with open('pi_acc'+str(accuracy)+'.json', 'w') as outfile:
-    f_name = 'pi_acc_pred'+str(num_of_predictions)+'_accs'+str(accuracy)
+    f_name = 'newpi_acc_pred'+str(num_of_predictions)+'_accs'+str(accuracy)
     with open(f_name+'.json', 'w') as outfile:
         json.dump(timer, outfile)
 
