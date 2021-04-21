@@ -113,7 +113,7 @@ if __name__ == '__main__':
     timer = {}
     max_range = multiprocessing.cpu_count()
 
-    for i in range(1,max_range+1):
+    for i in [1,2,4,8,16,32]:
         start_time = time.time()
         tasks_taken =  run_jobs(num_consumers=i, accuracy=accuracy, num_of_predictions=num_of_predictions)
         time_taken = (time.time() - start_time)
@@ -125,4 +125,4 @@ if __name__ == '__main__':
     f_name = 'newpi_acc_pred'+str(num_of_predictions)+'_accs'+str(accuracy)
     with open(f_name+'.json', 'w') as outfile:
         json.dump(timer, outfile)
-
+    exit()
