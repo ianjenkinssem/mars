@@ -115,7 +115,7 @@ def run_jobs(num_consumers, accuracy, num_of_predictions):
     return n
 
 if __name__ == '__main__':
-    accuracy = 0.000005
+    accuracy = 0.0000001
 
     num_of_predictions = 10000
 
