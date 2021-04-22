@@ -15,6 +15,8 @@ def f(q):
         # print(f'x {x}, y {y}')
         if x ** 2 + y ** 2 <= 1.0:
             s += 1
+    print(f'S = {s}')
+
     return q.put(s)
 
 if __name__ == '__main__':
@@ -23,7 +25,7 @@ if __name__ == '__main__':
                         default='1',
                         type=int,
                         help='Number of parallel processes')
-    parser.add_argument('--accuracy', '-a',
+    parser.add_argument('--accuracy', '-s',
                         default='0.0001',
                         type=float,
                         help='Number of steps in the Monte Carlo simulation')
@@ -44,18 +46,18 @@ if __name__ == '__main__':
         x = list(worker.start() for worker in consumers)
 
         for worker in consumers:
-            #print(f'worker pid {worker.pid}')
+            print(worker.pid)
             total_result+=q.get()
 
         n += 100000
         pi_est = (4.0 * total_result) / (n * args.workers)
-        #print(f'pi est {pi_est}')
+        print(f'pi est {pi_est}')
 
         list(worker.join() for worker in consumers)
 
     time_taken = (time.time() - start_time)
     print('Time', time_taken)
-    #print(f'total result {total_result}')
+    print(f'total result {total_result}')
     print(f'workers = {args.workers}')
     print(f'n {n*args.workers}')
     print(f'calcu per sec {((n*args.workers)/time_taken)/10000}')
