@@ -37,15 +37,16 @@ class sample_pi():
         time.sleep(0.1)  # pretend to take some time to do the work
         #print("Hello from a worker", os.getpid())
         s = 0
-        random.seed(self.b) #increments randome seed.
-        #random.seed()
+        #random.seed(self.b) #increments randome seed.
+
+        random.seed()
         for i in range(self.a): #args ?
             x = random.random()
             y = random.random()
             #print(f'x {x}, y {y}')
             if x ** 2 + y ** 2 <= 1.0:
                 s += 1
-
+        print(f'S = {s}')
         return s
 
 
@@ -74,6 +75,7 @@ def run_jobs(num_consumers, accuracy, num_of_predictions):
     #accuracy = 0.01 # format ok 99% = 0.01 99.9 0.001
     # 0.001
     n = 0
+
     #print(f' abs val {abs(pi - pi_est)}')
     total_result = 0
     count_tasks = 0
@@ -81,20 +83,26 @@ def run_jobs(num_consumers, accuracy, num_of_predictions):
     while abs(pi - pi_est) > accuracy:
         inc_rnd += 1
         #Problem, we only put a new task wjen we evaulate the the error.
+
+        print(f'num of consumers{num_consumers}')
         for i in range(num_consumers):
             tasks.put(sample_pi(a=num_of_predictions, b=inc_rnd)) # we put task for the consumers 12 + 12 + 12 +12 8 +8+ 8+ 8)
-            #tasks.join()
+        tasks.join()
         count_tasks += num_consumers
-        result = results.get()
-        total_result += result
-        #print('Result:', total_result)
+        for i in range(1, num_consumers+1):
+            print(f'printing i {i}')
+            result = results.get()
+            print('Results queue:', result)
+            total_result += result
+        print('Result Total:', total_result)
         n += num_of_predictions
-        pi_est = (4.0 * total_result) / n
+        pi_est = (4.0 * total_result) / (n*num_consumers)
+
 
         #print(f'pi estimate = {pi_est}')
         #print(f'steps {n}')
-        #print(" Steps\tSuccess\tPi est.\tError")
-        #print("%6d\t%7d\t%1.5f\t%1.5f" % (n, total_result, pi_est, pi - pi_est))
+        print(" Steps\tSuccess\tPi est.\tError")
+        print("%6d\t%7d\t%1.5f\t%1.5f" % (n, total_result, pi_est, pi - pi_est))
 
         #n = 1000 # comp per task/
 
@@ -108,21 +116,27 @@ def run_jobs(num_consumers, accuracy, num_of_predictions):
 
 if __name__ == '__main__':
     accuracy = 0.00001
-    num_of_predictions = 100000
+
+    num_of_predictions = 10000
+
 
     timer = {}
     max_range = multiprocessing.cpu_count()
 
-    for i in range(1,max_range+1):
+    for i in [1,2,4,8, 16, 24, 32]:
         start_time = time.time()
         tasks_taken =  run_jobs(num_consumers=i, accuracy=accuracy, num_of_predictions=num_of_predictions)
         time_taken = (time.time() - start_time)
         print('Time', time_taken)
-        timer[str(i)] = (tasks_taken, time_taken)
+        timer[str(i)] = (tasks_taken, time_taken, (tasks_taken/time_taken)/10000)
 
     print(f'time {timer}')
     # with open('pi_acc'+str(accuracy)+'.json', 'w') as outfile:
-    f_name = 'newpi_acc_pred'+str(num_of_predictions)+'_accs'+str(accuracy)
+    f_name = 'new2pi_acc_pred'+str(num_of_predictions)+'_accs'+str(accuracy)
     with open(f_name+'.json', 'w') as outfile:
         json.dump(timer, outfile)
+    exit()
 
+
+#he speedup is then calculated as how many samples per second the parallel version produces
+# divided by the number of samples per second the serial version produces. See [#/s] below.
