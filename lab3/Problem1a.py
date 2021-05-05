@@ -1,38 +1,59 @@
 from mrjob.job import MRJob
 from mrjob.step import MRStep
-import statistics
-import time
+import math
 
-class Problem_1a(MRJob):
+class CalculateStats(MRJob):
+
     def mapper(self, _, line):
-        c=0
-        for value in line.split('\t'):
-            c+=1
-            if c%3 == 0: # yield <value> from each line
-                yield "None",float(value)
-
+        words = line.split('\t')
+        grp = int(words[1])
+        yield "None", float(words[2])  # Yield <value>
 
     def combiner(self, _, value):
         count = 0
         values = 0
+        sumofsquares = 0
+        listofvalues = []
+
         for idx, v in enumerate(value):
             count += 1
             values += v
-        yield "None", (values,count)
+            sumofsquares += v**2
+            listofvalues.append(v)  # Group all the supplied values in a list
 
+        # Yield (sum of values, count, sumofsquares, min, max) tuple for each mapper
+        yield "None", (values,count,sumofsquares,min(listofvalues),max(listofvalues))
 
     def reducer(self, _, tuple):
         counts = 0
         values = 0
-        for idx,tup in enumerate(tuple):
-            values += tup[0]
-            counts += tup[1]
-        avg = values/counts
-        yield "Avg", avg
+        sumofsquares = 0
+        listofminvalues = []
+        listofmaxvalues = []
 
+        for idx,tup in enumerate(tuple): # Iterating through Iterator object
+            values += tup[0]  # Calculate sum of values
+            counts += tup[1]  # Calculate total count
+            sumofsquares += tup[2] # Aggregate total sum of squares of all values
+            listofminvalues.append(tup[3])  # Group all minimum values from each combiner
+            listofmaxvalues.append(tup[4])  # Group all maximum values from each combiner
 
-if __name__ == '__main__':
+        # Calculate Mean
+        mean = values/counts
 
-    begin_time = time.time()
-    Problem_1a.run()
-    print("Execution time in seconds ", time.time() - begin_time)
+        # Calculate std deviation
+        stddev = math.sqrt(sumofsquares/counts - mean**2)
+
+        # Yield Mean, Std deviation,Min, Max values
+        yield "Mean", mean
+        yield "Stddev",stddev
+        yield "Min value", min(listofminvalues)
+        yield "Max value", max(listofmaxvalues)
+
+    def steps(self):
+        return [MRStep(mapper=self.mapper,
+                       combiner=self.combiner,
+                       reducer=self.reducer)]
+
+#if __name__ == '__main__':
+    #CalculateStats.run()
