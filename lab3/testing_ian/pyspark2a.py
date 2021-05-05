@@ -9,7 +9,7 @@ def Statistics(args):
     sc = SparkContext(master = "local[%s]" % args.cores)
     datafile = sc.textFile(args.file)
 
-    data = datafile.map(lambda line: line.split())
+    data = datafile.map(lambda line: line.split()).map(lambda line: float(line[2]))
     count = data.count() 
     
     mean = data.reduce(lambda a, b: a + b) / count
