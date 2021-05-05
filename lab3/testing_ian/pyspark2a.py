@@ -1,6 +1,5 @@
-from pyspark import SparkContext #SparkContext is the entry point to any spark functionality
+from pyspark import SparkContext 
 import argparse
-import numpy as np
 import time
 
 start_time = time.time()
@@ -13,16 +12,14 @@ def Statistics(args):
     count = data.count() 
     
     mean = data.reduce(lambda a, b: a + b) / count
-    sd = np.sqrt(data.map(lambda line: (line - mean)**2).reduce(lambda a, b: a + b) / count)
+    sd = (data.map(lambda line: (line - mean)**2).reduce(lambda a, b: a + b) / count)**0.5
     mini = data.reduce(lambda a, b: min(a, b))
     maxi = data.reduce(lambda a, b: max(a, b)) 
-    hist = data.histogram(10)
 
     print("Mean : %1.4f" % mean)
     print("St.Dev: %1.4f" % sd)
     print("Min : %1.4f" % mini)
     print("Max : %1.4f" % maxi)
-    print("Histogram :" + str(hist)) 
     
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
