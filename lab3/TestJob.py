@@ -1,10 +1,15 @@
+
 from Problem1a import CalculateStats
+import sys
 
 import time
 
 if __name__ == '__main__':
     begin_time = time.time()
-    mr_job = CalculateStats(args=['--cat-output', 'mist-1000.dat'])
+    # Remove ['-r', 'local'] when running locally
+    mr_job = CalculateStats(args=['--cat-output', 'mist-5000.dat'])
+    # Uncomment below stmnt for testing in Bayes
+    #mr_job = CalculateStats(args=['-r', 'local','--cat-output', 'assignment3.dat'])
 
     with mr_job.make_runner() as runner:
         runner.run()
