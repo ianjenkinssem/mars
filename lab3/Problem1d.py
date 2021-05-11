@@ -3,10 +3,28 @@ import math
 
 class CalculateStats(MRJob):
 
+    def mapper_init(self):
+        self.group = int(self.options.group)
+
     def mapper(self, _, line):
         words = line.split('\t')
-        # Yield <value> column
-        yield "None", float(words[2])
+        grp = int(words[1])  # column <group> from the data file
+        if grp == self.group:
+            yield "None", float(words[2])  # Yield <value> column from data field
+
+    def configure_args(self):
+        super(CalculateStats, self).configure_args()
+        self.add_passthru_arg('--group', default=1,
+                    help="python Problem1d.py --group 13 assignment3.dat")
+
+    # Function to calculate frequency of values in given range
+    def count_records_in_range(self, values, minrange, maxrange):
+        counter = 0
+        # Loop thru all values
+        for val in values:
+            if val >= minrange and val <= maxrange:
+                counter += 1
+        return counter
 
     def combiner(self, _, value):
         count = 0
@@ -22,16 +40,6 @@ class CalculateStats(MRJob):
 
         # Yield (sum of values, count, sum of squares, min, max, list of values) tuple for each mapper
         yield "None", (values, count, sumofsquares, min(listofvalues), max(listofvalues), listofvalues)
-
-    # Function to calculate frequency of values in given range
-    def count_records_in_range(self, values, minrange, maxrange):
-        counter = 0
-        # Loop thru all values
-        for val in values:
-            if val >= minrange and val <= maxrange:
-                counter += 1
-        return counter
-
 
     def reducer(self, _, tuple):
         counts = 0
@@ -65,7 +73,7 @@ class CalculateStats(MRJob):
         yield "MinValue", minval
         yield "MaxValue", maxval
 
-        ### Calculate data for histogram - Bin interval and the number of records in that range ###
+        ### Calculate data for histogram i.e. Bin interval and the number of records in that range ###
         numofbins = 10
         listofallvalues = []
 
@@ -73,8 +81,9 @@ class CalculateStats(MRJob):
         for elem in listofvalues:
             listofallvalues.extend(elem)
 
-        # Calculate bin width - << Not rounding off the bin width as the values are of float type>>
+        # Calculate bin width - << Rounding off to 5 decimals >>
         bin_width = (maxval - minval)/numofbins
+        bin_width = round(bin_width,5)
 
         # Create list of bin intervals with minimum value
         bin_intervals = [minval]
@@ -94,4 +103,5 @@ class CalculateStats(MRJob):
 
 
 if __name__ == '__main__':
+
     CalculateStats.run()
