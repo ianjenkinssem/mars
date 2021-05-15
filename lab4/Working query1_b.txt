@@ -5,7 +5,7 @@ WHERE {
         wdt:P69 ?univ;
         wdt:P19 ?birthPlace;
         wdt:P27 ?country;
-        wdt:P108 ?employer;
+        wdt:P108 ?employer.
                          
   ?univ wdt:P31 wd:Q3918;
         wdt:P17 wd:Q34 ;
