@@ -15,8 +15,8 @@ WHERE {
        		 wdt:P17 wd:Q34;   
        		 rdfs:label ?univLabel .
         
-       FILTER (langMatches( lang(?personLabel), "EN" ) )
-       FILTER (langMatches( lang(?univLabel), "EN" ) )
+       FILTER (langMatches( lang(?personLabel), "sv" ) )
+       FILTER (langMatches( lang(?univLabel), "sv" ) )
        
     }	
 }
