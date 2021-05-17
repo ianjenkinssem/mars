@@ -25,6 +25,7 @@
 
     <owl:ObjectProperty rdf:about="urn:absolute:/problem1a#alumnusOf">
         <rdfs:domain rdf:resource="urn:absolute:/problem1a#Person"/>
+        <rdfs:range rdf:resource="urn:absolute:/problem1a#Organisation"/>
     </owl:ObjectProperty>
     
 
