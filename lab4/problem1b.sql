@@ -13,7 +13,7 @@ INSERT {
     ?birthPlace rdfs:type :Place ;
             :countryName ?countryLabel ;
     		:placeName ?placeLabel .
-	?hq rdfs:type :Place ;
+    ?hq rdfs:type :Place ;
             :countryName ?country2Label ;
     		:placeName ?hqLabel .
     ?organisation rdfs:type :Organisation ;
