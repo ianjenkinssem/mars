@@ -11,10 +11,13 @@ INSERT {
 }
 WHERE {
   SERVICE <https://query.wikidata.org/sparql>  {
-  ?university wdt:P31 wd:Q3918.
-  ?university wdt:P31 wd:Q68295960.
-  ?university wdt:P571 ?founded .
-  ?university rdfs:label ?universityLabel .
-FILTER ( lang(?universityLabel) = "en" )
+  	?university wdt:P31 wd:Q3918;			#university instanceOf University
+  		#?university wdt:P31 wd:Q68295960.	
+  		wdt:P17 wd:Q34;        			#university country Sweden       
+   		wdt:P571 ?founded ;	   		#university inception founded
+   		rdfs:label ?universityLabel .        	#Retreive label for university
+        
+   
+		FILTER ( lang(?universityLabel) = "en" )
 	}
 }
