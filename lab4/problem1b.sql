@@ -12,29 +12,29 @@ INSERT {
     		  :bornIn ?birthPlace .
     ?birthPlace rdfs:type :Place ;
             :countryName ?countryLabel ;
-    		:placeName ?placeLabel .
-    ?hq rdfs:type :Place ;
+    		:birthplaceName ?placeLabel .
+	?hq rdfs:type :Place ;
             :countryName ?country2Label ;
-    		:placeName ?hqLabel .
+    		:hqplaceName ?hqLabel .
     ?organisation rdfs:type :Organisation ;
-             :organisationName ?orgcountryLabel ;
-    		 :placeName ?hq . #locatedIn
+             :organisationName ?organisationLabel ;
+    		 :locatedIn ?hq . 
 }
 WHERE {
   SERVICE <https://query.wikidata.org/sparql>  {
       ?person wdt:P31 wd:Q5; #human
         wdt:P69 ?univ; #educated at
         rdfs:label ?personLabel; 
-		wdt:P108 ?organisation; #employer #optional
-        wdt:P19 ?birthPlace. #place of birth #optional
+        wdt:P108  ?organisation ;
+        wdt:P19 ?birthPlace . 
             
-      ?univ wdt:P31 wd:Q3918; #instance of -university
-        wdt:P17 wd:Q34; #country of -Sweden
-        wdt:P571 ?founded; #inception
+      ?univ wdt:P31 wd:Q3918; 
+        wdt:P17 wd:Q34; 
+        wdt:P571 ?founded; 
         rdfs:label ?univLabel.
 	
-      ?birthPlace wdt:P131 ?country. #located in administrative part of entitity
-      ?country wdt:P31 wd:Q6256. #instance of -country
+      ?birthPlace wdt:P131 ?country. 
+      ?country wdt:P31 wd:Q6256. 
         
       ?organisation wdt:P159 ?hq .
       ?hq wdt:P131 ?country2 .
@@ -46,12 +46,12 @@ WHERE {
       ?country rdfs:label ?countryLabel.  
       ?organisation rdfs:label ?organisationLabel.
         
-      FILTER(LANGMATCHES(LANG(?personLabel), "en"))
-      FILTER(LANGMATCHES(LANG(?univLabel), "en"))
-      FILTER(LANGMATCHES(LANG(?organisationLabel), "en"))
-      FILTER(LANGMATCHES(LANG(?placeLabel), "en"))
-      FILTER(LANGMATCHES(LANG(?countryLabel), "en"))
-      FILTER(LANGMATCHES(LANG(?hqLabel), "en"))
-      FILTER(LANGMATCHES(LANG(?country2Label), "en"))
+      FILTER(LANGMATCHES(LANG(?personLabel), "sv"))
+      FILTER(LANGMATCHES(LANG(?univLabel), "sv"))
+      FILTER(LANGMATCHES(LANG(?organisationLabel), "sv"))
+      FILTER(LANGMATCHES(LANG(?placeLabel), "sv"))
+      FILTER(LANGMATCHES(LANG(?countryLabel), "sv"))
+      FILTER(LANGMATCHES(LANG(?hqLabel), "sv"))
+      FILTER(LANGMATCHES(LANG(?country2Label), "sv"))
 	}
 }
