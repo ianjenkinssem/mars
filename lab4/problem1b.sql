@@ -22,8 +22,8 @@ INSERT {
 }
 WHERE {
   SERVICE <https://query.wikidata.org/sparql>  {
-      ?person wdt:P31 wd:Q5; #human
-        wdt:P69 ?univ; #educated at
+      ?person wdt:P31 wd:Q5; 
+        wdt:P69 ?univ; 
         rdfs:label ?personLabel; 
         wdt:P108  ?organisation ;
         wdt:P19 ?birthPlace . 
