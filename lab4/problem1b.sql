@@ -12,10 +12,10 @@ INSERT {
     		  :bornIn ?birthPlace .
     ?birthPlace rdfs:type :Place ;
             :countryName ?countryLabel ;
-    		:birthplaceName ?placeLabel .
-	?hq rdfs:type :Place ;
+    		:placeName ?placeLabel .
+    ?hq rdfs:type :Place ;
             :countryName ?country2Label ;
-    		:hqplaceName ?hqLabel .
+    		:placeName ?hqLabel .
     ?organisation rdfs:type :Organisation ;
              :organisationName ?organisationLabel ;
     		 :locatedIn ?hq . 
