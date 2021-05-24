@@ -1,11 +1,11 @@
 
 
-Change Raw url:
-===============
+Change Raw url to point to your csv file:
+=========================================
 https://raw.githubusercontent.com/Dipti-A/Dipti-A/main/query-result.csv
 
 
-
+Not required to be executed on neo4j for assignment
 Create data model using cipher From Arrow:
 ==========================================
 
@@ -22,10 +22,10 @@ CREATE
   (`1`)-[:`isLocatedIn` ]->(`6`)
 
 
-
+Not required to be executed on neo4j for assignment
 To add rows one by one:
 ========================
-CREATE  (`0` :Person {name:"Otto Maenchen-Helfen"}) , (`1` :Organisation {organisationLabel:"University of California, Berkeley"} ) , (`2` :University {univLabel:"Göteborgs universitet"} ) , (`5` :Place {orgnPlaceLabel:"Berkeley"} ) , (`0`)-[:`employeeOf` ]->(`1`), (`0`)-[:`alumunusOf` ]->(`2`), (`1`)-[:`isLocatedIn` ]->(`5`), (`0`)-[:`bornIn` ]->(`5`), (`2`)-[:`isA` ]->(`1`)
+CREATE  (`0` :Person {name:"Otto Maenchen-Helfen"}) , (`1` :Organisation {organisationLabel:"University of California, Berkeley"} ) , (`2` :University {univLabel:"GÃ¶teborgs universitet"} ) , (`5` :Place {orgnPlaceLabel:"Berkeley"} ) , (`0`)-[:`employeeOf` ]->(`1`), (`0`)-[:`alumunusOf` ]->(`2`), (`1`)-[:`isLocatedIn` ]->(`5`), (`0`)-[:`bornIn` ]->(`5`), (`2`)-[:`isA` ]->(`1`)
 
 
 
@@ -54,7 +54,7 @@ MATCH (p:Person)-[:bornIn]->(b:Place) return p,b
 
 MATCH (p:Person)-[:alumunusOf]->(u:University) return p,u
 
-MATCH (p:Person)-[:alumunusOf]->(u:University {univLabel:"Göteborgs universitet"}) return p,u
+MATCH (p:Person)-[:alumunusOf]->(u:University {univLabel:"GÃ¶teborgs universitet"}) return p,u
 
 MATCH (p:Person)-[:bornIn]->(l:Place {birthCountryLabel:"USA"}) return p,l
 
