@@ -58,9 +58,11 @@ MATCH (p:Person)-[:alumunusOf]->(u:University {univLabel:"Göteborgs universitet
 
 MATCH (p:Person)-[:bornIn]->(l:Place {birthCountryLabel:"USA"}) return p,l
 
+MATCH (p:Person)-[:alumunusOf]->(u:University {univLabel:"Göteborgs universitet"}) WITH p, u MATCH (p:Person)-[:employeeOf]->(o:Organisation {organisationLabel:"Göteborgs universitet"}) return p,o, u
 
+MATCH (p:Person)-[:alumunusOf]->(u:University {univLabel:"Göteborgs universitet"})
+RETURN labels(p), count(p)
 
+MATCH (p:Person)-[:alumunusOf]->(u:University {univLabel:"Göteborgs universitet"}) WITH p, u MATCH (p:Person)-[:employeeOf]->(o:Organisation) return p,o, u
 
-
-
-
+MATCH (p:Person)-[:alumunusOf]->(u:University {univLabel:"Göteborgs universitet"}) WITH p, u MATCH (p:Person)-[:employeeOf]->(o:Organisation)WHERE exists(o.organisationLabel) return p,u,o ORDER BY o.organisationLabel
